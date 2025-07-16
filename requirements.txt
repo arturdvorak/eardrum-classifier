@@ -1,0 +1,16 @@
+jupyterlab
+jupyter
+pandas
+numpy
+matplotlib
+seaborn==0.13.2
+torch
+torchvision
+torchaudio
+transformers
+huggingface_hub
+timm
+pytorch-lightning
+scikit-learn
+kaggle
+mlflow

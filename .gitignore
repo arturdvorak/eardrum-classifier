@@ -1,0 +1,17 @@
+# Datasets
+*.zip
+eardrum_dataset/
+eardrum_split/
+
+# ML logs and models
+mlruns/
+lightning_logs/
+checkpoints/
+*.ckpt
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Python cache
+__pycache__/
+*.pyc
