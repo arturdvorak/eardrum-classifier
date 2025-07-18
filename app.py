@@ -1,22 +1,20 @@
 # app.py
 
-# Standard libraries
+# ========== Standard & Core ==========
 import os
+import torch
+import requests
 from datetime import datetime
-
-# Image processing
 from PIL import Image
 
-# Torch libraries
-import torch
+# ========== Image Processing ==========
 import torchvision.transforms as transforms
 
-# Web
+# ========== Streamlit ==========
 import streamlit as st
-import requests
 
-# Model
-from model import EfficientNetV2Lightning  # Make sure this is implemented in model.py
+# ========== Your Model ==========
+from model import EfficientNetV2Lightning
 
 # ------------ Config ------------
 CHECKPOINT_PATH = "best_model.ckpt"
@@ -31,12 +29,12 @@ CLASS_NAMES = [
     "tympanoskleros"
 ]
 IMAGE_SIZE = 224
-WEBHOOK_URL = ""  # Optional
+WEBHOOK_URL = ""  # Optional webhook URL
 # --------------------------------
 
 
 def download_file_from_google_drive(file_id, destination):
-    """Downloads a large file from Google Drive with confirmation token support (no auth)."""
+    """Downloads large files from Google Drive with token support (no auth)."""
     def get_confirm_token(response):
         for key, value in response.cookies.items():
             if key.startswith("download_warning"):
@@ -58,12 +56,10 @@ def download_file_from_google_drive(file_id, destination):
             if chunk:
                 f.write(chunk)
 
-    print("Downloaded model successfully.")
-
 
 @st.cache_resource
 def load_model():
-    """Load the trained model from local checkpoint or download if missing."""
+    """Download checkpoint (if needed) and load model."""
     if not os.path.exists(CHECKPOINT_PATH):
         st.info("Downloading model checkpoint from public Google Drive...")
         download_file_from_google_drive(DRIVE_FILE_ID, CHECKPOINT_PATH)
@@ -78,18 +74,18 @@ def load_model():
 
 
 def preprocess_image(image: Image.Image):
-    """Resize, normalize, and convert the image to tensor."""
+    """Resize, normalize, and convert image to tensor."""
     transform = transforms.Compose([
         transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
     ])
-    return transform(image).unsqueeze(0)  # Add batch dimension
+    return transform(image).unsqueeze(0)
 
 
 def send_webhook(label: str, prob: float):
-    """Send prediction result to an external webhook (if enabled)."""
+    """Send prediction result to webhook if enabled."""
     payload = {
         "timestamp": datetime.now().isoformat(),
         "label": label,
@@ -105,7 +101,7 @@ def send_webhook(label: str, prob: float):
         st.error(f"Error sending webhook: {e}")
 
 
-# ------------- Streamlit UI -------------
+# ========== Streamlit UI ==========
 st.title("Eardrum Classifier")
 st.write("Upload an image of the tympanic membrane to classify its condition.")
 
@@ -133,4 +129,3 @@ if uploaded_file is not None:
 
     if use_webhook and WEBHOOK_URL:
         send_webhook(label, confidence)
-# -----------------------------------------
