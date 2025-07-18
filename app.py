@@ -1,18 +1,26 @@
 # app.py
 
+# Standard libraries
 import os
+from datetime import datetime
+
+# Image processing
+from PIL import Image
+
+# Torch libraries
 import torch
 import torchvision.transforms as transforms
-from PIL import Image
-from datetime import datetime
+
+# Web
 import streamlit as st
 import requests
 
-from model import EfficientNetV2Lightning  # Use your actual model class
+# Model
+from model import EfficientNetV2Lightning  # Make sure this is implemented in model.py
 
 # ------------ Config ------------
 CHECKPOINT_PATH = "best_model.ckpt"
-DRIVE_FILE_ID = "1YE2TYrruX4kVKtnwwXmXz7VKXCYjrVlf"  # Public file ID
+DRIVE_FILE_ID = "1YE2TYrruX4kVKtnwwXmXz7VKXCYjrVlf"
 NUM_CLASSES = 6
 CLASS_NAMES = [
     "Aom",
@@ -23,29 +31,43 @@ CLASS_NAMES = [
     "tympanoskleros"
 ]
 IMAGE_SIZE = 224
-WEBHOOK_URL = ""  # Optional webhook URL
+WEBHOOK_URL = ""  # Optional
 # --------------------------------
 
 
-def download_checkpoint_public():
-    """Download the checkpoint using public Google Drive link without auth."""
-    url = f"https://drive.google.com/uc?export=download&id={DRIVE_FILE_ID}"
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        with open(CHECKPOINT_PATH, 'wb') as f:
-            f.write(response.content)
-        st.success("Model checkpoint downloaded successfully.")
-    except Exception as e:
-        st.error(f"Failed to download checkpoint: {e}")
+def download_file_from_google_drive(file_id, destination):
+    """Downloads a large file from Google Drive with confirmation token support (no auth)."""
+    def get_confirm_token(response):
+        for key, value in response.cookies.items():
+            if key.startswith("download_warning"):
+                return value
+        return None
+
+    url = "https://docs.google.com/uc?export=download"
+    session = requests.Session()
+
+    response = session.get(url, params={"id": file_id}, stream=True)
+    token = get_confirm_token(response)
+
+    if token:
+        params = {"id": file_id, "confirm": token}
+        response = session.get(url, params=params, stream=True)
+
+    with open(destination, "wb") as f:
+        for chunk in response.iter_content(32768):
+            if chunk:
+                f.write(chunk)
+
+    print("Downloaded model successfully.")
 
 
 @st.cache_resource
 def load_model():
-    """Load model from local checkpoint, downloading if necessary."""
+    """Load the trained model from local checkpoint or download if missing."""
     if not os.path.exists(CHECKPOINT_PATH):
         st.info("Downloading model checkpoint from public Google Drive...")
-        download_checkpoint_public()
+        download_file_from_google_drive(DRIVE_FILE_ID, CHECKPOINT_PATH)
+        st.success("Model checkpoint downloaded successfully.")
 
     model = EfficientNetV2Lightning.load_from_checkpoint(
         CHECKPOINT_PATH,
@@ -56,18 +78,18 @@ def load_model():
 
 
 def preprocess_image(image: Image.Image):
-    """Preprocess image for model input."""
+    """Resize, normalize, and convert the image to tensor."""
     transform = transforms.Compose([
         transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
     ])
-    return transform(image).unsqueeze(0)
+    return transform(image).unsqueeze(0)  # Add batch dimension
 
 
 def send_webhook(label: str, prob: float):
-    """Send classification result to webhook."""
+    """Send prediction result to an external webhook (if enabled)."""
     payload = {
         "timestamp": datetime.now().isoformat(),
         "label": label,
@@ -83,7 +105,7 @@ def send_webhook(label: str, prob: float):
         st.error(f"Error sending webhook: {e}")
 
 
-# ------------------ Streamlit UI ------------------
+# ------------- Streamlit UI -------------
 st.title("Eardrum Classifier")
 st.write("Upload an image of the tympanic membrane to classify its condition.")
 
@@ -111,4 +133,4 @@ if uploaded_file is not None:
 
     if use_webhook and WEBHOOK_URL:
         send_webhook(label, confidence)
-# ---------------------------------------------------
+# -----------------------------------------
