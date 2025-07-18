@@ -1,19 +1,18 @@
 # app.py
 
-import streamlit as st
+import os
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-import requests
 from datetime import datetime
-import os
-
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+import streamlit as st
+import requests
 
 from model import EfficientNetV2Lightning  # Use your actual model class
 
 # ------------ Config ------------
-CHECKPOINT_PATH = "/Users/arturdvorak/Desktop/ML course/Notebooks/Image Recognision/mlruns/834690443400753513/4aca2af8a020429183255415bc380ee0/checkpoints/last2+head-best-f1-epoch=03-val_f1=0.4978.ckpt"
+CHECKPOINT_PATH = "best_model.ckpt"
+DRIVE_FILE_ID = "1YE2TYrruX4kVKtnwwXmXz7VKXCYjrVlf"  # Public file ID
 NUM_CLASSES = 6
 CLASS_NAMES = [
     "Aom",
@@ -28,8 +27,26 @@ WEBHOOK_URL = ""  # Optional webhook URL
 # --------------------------------
 
 
+def download_checkpoint_public():
+    """Download the checkpoint using public Google Drive link without auth."""
+    url = f"https://drive.google.com/uc?export=download&id={DRIVE_FILE_ID}"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        with open(CHECKPOINT_PATH, 'wb') as f:
+            f.write(response.content)
+        st.success("Model checkpoint downloaded successfully.")
+    except Exception as e:
+        st.error(f"Failed to download checkpoint: {e}")
+
+
 @st.cache_resource
 def load_model():
+    """Load model from local checkpoint, downloading if necessary."""
+    if not os.path.exists(CHECKPOINT_PATH):
+        st.info("Downloading model checkpoint from public Google Drive...")
+        download_checkpoint_public()
+
     model = EfficientNetV2Lightning.load_from_checkpoint(
         CHECKPOINT_PATH,
         num_classes=NUM_CLASSES
@@ -39,16 +56,18 @@ def load_model():
 
 
 def preprocess_image(image: Image.Image):
+    """Preprocess image for model input."""
     transform = transforms.Compose([
         transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
     ])
-    return transform(image).unsqueeze(0)  # Add batch dimension
+    return transform(image).unsqueeze(0)
 
 
 def send_webhook(label: str, prob: float):
+    """Send classification result to webhook."""
     payload = {
         "timestamp": datetime.now().isoformat(),
         "label": label,
@@ -64,12 +83,11 @@ def send_webhook(label: str, prob: float):
         st.error(f"Error sending webhook: {e}")
 
 
-# ------------- UI -------------
+# ------------------ Streamlit UI ------------------
 st.title("Eardrum Classifier")
 st.write("Upload an image of the tympanic membrane to classify its condition.")
 
 uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
-
 use_webhook = st.checkbox("Send result to Microsoft Flow webhook")
 
 if uploaded_file is not None:
@@ -81,8 +99,8 @@ if uploaded_file is not None:
         input_tensor = preprocess_image(image)
 
     with torch.no_grad():
-        device = next(model.parameters()).device  # Get model device (e.g., mps or cpu)
-        input_tensor = input_tensor.to(device)    # Move input to same device
+        device = next(model.parameters()).device
+        input_tensor = input_tensor.to(device)
         output = model(input_tensor)
         probs = torch.nn.functional.softmax(output, dim=1)
         conf, pred = torch.max(probs, dim=1)
@@ -93,4 +111,4 @@ if uploaded_file is not None:
 
     if use_webhook and WEBHOOK_URL:
         send_webhook(label, confidence)
-# ------------------------------
+# ---------------------------------------------------
