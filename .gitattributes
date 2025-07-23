@@ -1,0 +1,1 @@
+checkpoints/last2+head-best-f1-epoch=03-val_f1=0.4978.ckpt filter=lfs diff=lfs merge=lfs -text
