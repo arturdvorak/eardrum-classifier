@@ -1,1 +1,1 @@
-checkpoints/last2+head-best-f1-epoch=03-val_f1=0.4978.ckpt filter=lfs diff=lfs merge=lfs -text
+mlruns/834690443400753513/46788dc38ee449f78f61e3e1e8b7b312/checkpoints/last2+head-best-f1-epoch=03-val_f1=0.4978.ckpt filter=lfs diff=lfs merge=lfs -text
