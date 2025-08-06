@@ -1,6 +1,3 @@
-<details>
-<summary>Click to expand and copy the raw Markdown code</summary>
-
 # Eardrum Classification with EfficientNetV2 + PyTorch Lightning
 
 This project builds a robust classifier for tympanic membrane (eardrum) conditions using medical images. It leverages a pre-trained EfficientNetV2-S model from `timm`, fine-tunes it with PyTorch Lightning, and evaluates multiple transfer learning strategies.
@@ -132,5 +129,3 @@ Optional webhook integration for tools like Microsoft Flow or other automation p
 - mlflow  
 - seaborn  
 - streamlit  
-
-</details>
