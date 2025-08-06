@@ -5,7 +5,7 @@ This project builds a robust classifier for tympanic membrane (eardrum) conditio
 ⸻
 
 Dataset
-	•	Source: Kaggle - Eardrum Dataset (Otitis Media)
+	•	Source: Kaggle – Eardrum Dataset (Otitis Media)
 	•	Total images: 956
 	•	Classes Used:
 	•	Normal
@@ -19,62 +19,89 @@ Dataset
 	•	PseduoMembran
 	•	Earventulation
 
+Later, for Cycle 2, only 4 classes were retained:
+	•	Aom
+	•	Chronic
+	•	Earwax
+	•	Normal
+
 ⸻
 
 Project Pipeline
 
 1. Dataset Setup
 	•	Download from Kaggle
-	•	Unpack & clean up previous versions
+	•	Unpack & clean old versions
 	•	Remove underrepresented classes
-	•	Split into train/, val/, and test/ (70/15/15)
+	•	Split into train/, val/, and test/ folders (70/15/15)
 
 2. Data Preprocessing
-	•	Resize to 224×224
-	•	Train set uses augmentation (flip, rotation)
-	•	Normalization using ImageNet stats
-	•	Loaded with ImageFolder and DataLoader
+	•	Resize images to 224×224
+	•	Augment training images (horizontal flip, rotation)
+	•	Normalize using ImageNet mean/std
+	•	Load with ImageFolder and wrap with DataLoader
 
 3. Model: EfficientNetV2-S
 	•	From timm: tf_efficientnetv2_s.in21k
 	•	Final classification head replaced to match number of classes
 
 4. Evaluation Metric
-	•	Primary: Macro F1 Score (to handle class imbalance)
+	•	Primary: Macro F1 Score (robust to class imbalance)
 
 5. Lightning Module
 
 Defines:
 	•	forward(), training_step(), validation_step(), test_step()
-	•	Loss: CrossEntropyLoss
-	•	Metrics: torchmetrics.MulticlassF1Score
-	•	Optimizer: AdamW with ReduceLROnPlateau scheduler
+	•	configure_optimizers() with AdamW + ReduceLROnPlateau
+	•	torchmetrics.MulticlassF1Score for validation/test
 
 6. Fine-Tuning Strategies
 
-Each trained with early stopping & checkpointing:
-	•	freeze_backbone: Only train classification head
-	•	last1+head → last4+head: Unfreeze last N blocks + head
+Each trained with EarlyStopping and ModelCheckpoint:
+	•	freeze_backbone: Only head is trainable
+	•	last1+head, last2+head, last3+head, last4+head: Gradually unfreeze blocks
 	•	full: All layers trainable
 
-Logged using MLflow:
-	•	Training curves
+All experiments tracked via MLflow:
+	•	Metrics, parameters, training curves
 	•	Best checkpoints
-	•	Suggested learning rates from Lightning’s tuner
+	•	Suggested learning rates (via Lightning Tuner)
 
 7. Model Evaluation (on test set)
 	•	Load best checkpoint per strategy
 	•	Run predictions on test data
-	•	Compute final metrics
+	•	Compute accuracy, precision, recall, F1
 	•	Display confusion matrix
-	•	Log to MLflow with classification report
+	•	Log metrics and classification report to MLflow
 
-8. Streamlit App
+8. Strategy Comparison
+	•	Compare evaluation metrics across strategies
+	•	Tabulate accuracy, precision, recall, F1
 
-A simple web interface to upload an eardrum image and get predictions. Optional webhook support to send results to Microsoft Flow or other automation tools.
+9. Model Improvement
+	•	Integrate learning rate tuning via Lightning’s Tuner
+	•	Re-train each strategy with optimal LR
+	•	Re-evaluate and update strategy summary
 
+10. Per-Class Performance
+	•	Compute and visualize F1 Score per class
+	•	Analyze model strengths and weaknesses
 
-Main libraries:
+11. Cycle 2: Reduced Class Training
+	•	New training cycle with 4 main classes (Aom, Chronic, Earwax, Normal)
+	•	Repeat full training & evaluation pipeline
+
+12. Export Best Model
+	•	Save top-performing checkpoint
+	•	Upload to Google Drive for sharing/deployment
+
+13. Streamlit App
+
+A simple web interface to upload an eardrum image and get predictions. Optional webhook integration for tools like Microsoft Flow or other automation platforms.
+
+⸻
+
+Main Libraries
 	•	PyTorch
 	•	torchvision
 	•	timm
