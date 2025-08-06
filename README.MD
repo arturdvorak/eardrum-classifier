@@ -84,14 +84,3 @@ Main libraries:
 	•	mlflow
 	•	seaborn
 	•	streamlit
-
-Folder Structure
-eardrum_classifier/
-├── eardrum_dataset/            # Raw dataset after extraction
-├── eardrum_split/              # Cleaned and split dataset
-├── best_checkpoints_*.json     # Saved paths of best checkpoints
-├── model.py                    # LightningModule definition
-├── app.py                      # Streamlit web app
-├── train.py                    # Fine-tuning strategies
-├── evaluate.py                 # Final evaluation on test set
-└── README.md

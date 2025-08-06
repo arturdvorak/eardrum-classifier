@@ -1,4 +1,22 @@
-# Datasets
+# Folders to ignore
+checkpoints/
+eardrum_dataset/
+eardrum_split/
+lightning_logs/
+mlruns/
+__pycache__/
+.ipynb_checkpoints/
+
+# File types to ignore
+*.json          # Includes best_checkpoints_*.json, client_secrets.json
+*.txt           # Classification reports
+*.ckpt          # Model checkpoints
+*.pyc           # Python cache files
+*.zip           # Downloaded dataset
+.DS_Store       # macOS system file
+
+# Specific files
+client_secrets.json# Datasets
 *.zip
 eardrum_dataset/
 eardrum_split/

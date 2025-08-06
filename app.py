@@ -1,22 +1,14 @@
 # app.py
 
-# ========== Standard & Core ==========
 import os
 import torch
 import requests
 from datetime import datetime
 from PIL import Image
-
-# ========== Image Processing ==========
 import torchvision.transforms as transforms
-
-# ========== Streamlit ==========
 import streamlit as st
-
-# ========== Your Model ==========
 from model import EfficientNetV2Lightning
 
-# ------------ Config ------------
 CHECKPOINT_PATH = "best_model.ckpt"
 DRIVE_FILE_ID = "1YE2TYrruX4kVKtnwwXmXz7VKXCYjrVlf"
 NUM_CLASSES = 6
