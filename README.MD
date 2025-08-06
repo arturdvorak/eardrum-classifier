@@ -62,7 +62,7 @@ Each trained with EarlyStopping and ModelCheckpoint:
 	•	last1+head, last2+head, last3+head, last4+head: Gradually unfreeze blocks
 	•	full: All layers trainable
 
-All experiments tracked via MLflow:
+Tracked via MLflow:
 	•	Metrics, parameters, training curves
 	•	Best checkpoints
 	•	Suggested learning rates (via Lightning Tuner)
@@ -95,9 +95,12 @@ All experiments tracked via MLflow:
 	•	Save top-performing checkpoint
 	•	Upload to Google Drive for sharing/deployment
 
-13. Streamlit App
+⸻
 
-A simple web interface to upload an eardrum image and get predictions. Optional webhook integration for tools like Microsoft Flow or other automation platforms.
+Streamlit App
+
+A simple web interface to upload an eardrum image and get predictions.
+Optional webhook integration for tools like Microsoft Flow or other automation platforms.
 
 ⸻
 
