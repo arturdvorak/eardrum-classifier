@@ -16,7 +16,8 @@ __pycache__/
 .DS_Store       # macOS system file
 
 # Specific files
-client_secrets.json# Datasets
+client_secrets.json
+# Datasets
 *.zip
 eardrum_dataset/
 eardrum_split/
