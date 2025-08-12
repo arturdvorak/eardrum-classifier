@@ -20,8 +20,8 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/arturdvorak/eardrum-classifier",
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
+    packages=find_packages(where="src") + ["scripts"],
+    package_dir={"": "src", "scripts": "scripts"},
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Healthcare Industry",
@@ -48,9 +48,9 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "eardrum-train=scripts.2_train:main",
-            "eardrum-evaluate=scripts.3_evaluate:main",
-            "eardrum-predict=scripts.4_predict:main",
+            "eardrum-train=scripts.train:main",
+            "eardrum-evaluate=scripts.evaluate:main",
+            "eardrum-predict=scripts.predict:main",
         ],
     },
 )

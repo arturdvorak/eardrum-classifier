@@ -201,6 +201,10 @@ def save_best_checkpoints_info(trained_models):
     
     logger.info("Best checkpoints information saved")
 
-if __name__ == "__main__":
+def main():
+    """Main function for CLI tool."""
     setup_logging()
     train_models()
+
+if __name__ == "__main__":
+    main()

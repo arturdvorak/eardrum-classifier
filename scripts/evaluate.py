@@ -269,6 +269,10 @@ def save_detailed_results(all_results):
     
     logger.info("Detailed results saved to logs/evaluation_results.json")
 
-if __name__ == "__main__":
+def main():
+    """Main function for CLI tool."""
     setup_logging()
     evaluate_all_strategies()
+
+if __name__ == "__main__":
+    main()

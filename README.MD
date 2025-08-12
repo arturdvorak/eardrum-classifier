@@ -4,6 +4,121 @@ This project builds a robust classifier for tympanic membrane (eardrum) conditio
 
 ---
 
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd "Image Recognision"
+
+# Install the package in development mode
+pip install -e .
+```
+
+### Usage
+
+#### 1. **Pipeline Script** (Recommended for full workflow)
+```bash
+# Run the complete pipeline
+python scripts/run_pipeline.py --step all
+
+# Run specific steps
+python scripts/run_pipeline.py --step data      # Data setup only
+python scripts/run_pipeline.py --step train     # Training only
+python scripts/run_pipeline.py --step evaluate  # Evaluation only
+
+# Get help
+python scripts/run_pipeline.py --help
+```
+
+#### 2. **CLI Tools** (Individual operations)
+```bash
+# Training
+eardrum-train
+
+# Evaluation
+eardrum-evaluate
+
+# Prediction
+eardrum-predict --image path/to/image.jpg --output predictions.json
+
+# Get help for any tool
+eardrum-train --help
+eardrum-evaluate --help
+eardrum-predict --help
+```
+
+#### 3. **Python Import**
+```python
+from eardrum_classifier import EfficientNetV2Lightning
+
+# Create model
+model = EfficientNetV2Lightning(
+    num_classes=6,  # Aom, Chronic, Earwax, Normal, Otitis Externa, Tympanosclerosis
+    lr=1e-4
+)
+```
+
+---
+
+## 📁 Project Structure
+
+```
+Image Recognision/
+├── config/                 # Configuration files
+├── data/                   # Dataset directories
+│   ├── external/          # Raw downloaded data
+│   ├── processed/         # Processed and split data
+│   └── raw/              # Original dataset
+├── docker/                # Docker configuration
+├── docs/                  # Documentation
+├── logs/                  # Training logs and MLflow tracking
+├── models/                # Saved models and checkpoints
+├── notebooks/             # Jupyter notebooks
+├── requirements/          # Dependencies
+├── scripts/               # Executable scripts
+│   ├── data_setup.py     # Data preparation
+│   ├── train.py          # Model training
+│   ├── evaluate.py        # Model evaluation
+│   ├── predict.py         # Inference
+│   └── run_pipeline.py    # Complete pipeline
+├── src/                   # Source code package
+│   └── eardrum_classifier/
+│       ├── data/          # Data loading and transforms
+│       ├── models/        # Model definitions
+│       ├── training/      # Training utilities
+│       └── utils/         # Utility functions
+├── tests/                 # Test files
+├── web/                   # Web application
+└── setup.py              # Package configuration
+```
+
+---
+
+## 🎯 Features
+
+### ✅ **Working Components**
+- **CLI Tools**: `eardrum-train`, `eardrum-evaluate`, `eardrum-predict`
+- **Pipeline Script**: Complete workflow orchestration
+- **Python Package**: Importable `eardrum_classifier` module
+- **Model Architecture**: EfficientNetV2 with PyTorch Lightning
+- **Training Strategies**: Multiple fine-tuning approaches
+- **MLflow Integration**: Experiment tracking and model management
+
+### 🔄 **Training Strategies**
+- `freeze_backbone`: Only head is trainable
+- `last1+head`, `last2+head`, `last3+head`, `last4+head`: Gradually unfreeze blocks
+- `full`: All layers trainable
+
+### 📊 **Evaluation Metrics**
+- **Primary**: Macro F1 Score (robust to class imbalance)
+- **Secondary**: Accuracy, Precision, Recall
+- **Visualization**: Confusion matrices, performance plots
+
+---
+
 ## Dataset
 
 - **Source**: [Kaggle – Eardrum Dataset (Otitis Media)](https://www.kaggle.com/datasets/erdalbasaran/eardrum-dataset-otitis-media)  
@@ -28,104 +143,93 @@ This project builds a robust classifier for tympanic membrane (eardrum) conditio
 
 ---
 
-## Project Pipeline
+## 🔧 Technical Details
 
-### Dataset Setup
+### Model Architecture
+- **Base Model**: EfficientNetV2-S from `timm`
+- **Input Size**: 224×224 pixels
+- **Normalization**: ImageNet mean/std
+- **Optimizer**: AdamW with ReduceLROnPlateau
+- **Loss**: CrossEntropyLoss
 
-- Download from Kaggle  
-- Unpack & clean old versions  
-- Remove underrepresented classes  
-- Split into `train/`, `val/`, and `test/` folders (70/15/15)
+### Data Pipeline
+- **Augmentation**: Horizontal flip, rotation, normalization
+- **Split Ratio**: 70% train / 15% validation / 15% test
+- **Batch Size**: Configurable via configuration files
 
-### Data Preprocessing
-
-- Resize images to `224×224`  
-- Augment training images (horizontal flip, rotation)  
-- Normalize using ImageNet mean/std  
-- Load with `ImageFolder` and wrap with `DataLoader`
-
-### Model: EfficientNetV2-S
-
-- From `timm`: `tf_efficientnetv2_s.in21k`  
-- Final classification head replaced to match number of classes
-
-### Evaluation Metric
-
-- **Primary**: Macro F1 Score (robust to class imbalance)
-
-### Lightning Module
-
-Defines:
-
-- `forward()`, `training_step()`, `validation_step()`, `test_step()`  
-- `configure_optimizers()` with AdamW + ReduceLROnPlateau  
-- `torchmetrics.MulticlassF1Score` for validation/test  
-
-### Fine-Tuning Strategies
-
-Each trained with `EarlyStopping` and `ModelCheckpoint`:
-
-- `freeze_backbone`: Only head is trainable  
-- `last1+head`, `last2+head`, `last3+head`, `last4+head`: Gradually unfreeze blocks  
-- `full`: All layers trainable
-
-Tracked via **MLflow**:
-
-- Metrics, parameters, training curves  
-- Best checkpoints  
-- Suggested learning rates (via Lightning Tuner)
-
-### Model Evaluation (on test set)
-
-- Load best checkpoint per strategy  
-- Run predictions on test data  
-- Compute accuracy, precision, recall, F1  
-- Display confusion matrix  
-- Log metrics and classification report to MLflow  
-
-### Strategy Comparison
-
-- Compare evaluation metrics across strategies  
-- Tabulate accuracy, precision, recall, F1  
-
-### Model Improvement
-
-- Integrate learning rate tuning via Lightning’s Tuner  
-- Re-train each strategy with optimal LR  
-- Re-evaluate and update strategy summary  
-
-### Per-Class Performance
-
-- Compute and visualize F1 Score per class  
-- Analyze model strengths and weaknesses  
-
-### Cycle 2: Reduced Class Training
-
-- New training cycle with 4 main classes (Aom, Chronic, Earwax, Normal)  
-- Repeat full training & evaluation pipeline  
-
-### Export Best Model
-
-- Save top-performing checkpoint  
-- Upload to Google Drive for sharing/deployment
+### Training Features
+- **Early Stopping**: Prevents overfitting
+- **Model Checkpointing**: Saves best models
+- **Learning Rate Scheduling**: Adaptive LR adjustment
+- **MLflow Tracking**: Experiment logging and comparison
 
 ---
 
-## Streamlit App
+## 📈 Usage Examples
 
-A simple web interface to upload an eardrum image and get predictions.  
-Optional webhook integration for tools like Microsoft Flow or other automation platforms.
+### Training a Single Strategy
+```bash
+# Train with freeze_backbone strategy
+eardrum-train
+
+# Check training progress
+tail -f logs/pipeline.log
+```
+
+### Evaluating Models
+```bash
+# Evaluate all trained strategies
+eardrum-evaluate
+
+# Results will be saved to logs/evaluation_results.json
+```
+
+### Making Predictions
+```bash
+# Single image prediction
+eardrum-predict --image data/test/sample.jpg --output prediction.json
+
+# Batch prediction
+eardrum-predict --images data/test/*.jpg --output batch_predictions.json
+```
+
+### Running Complete Pipeline
+```bash
+# Run everything
+python scripts/run_pipeline.py --step all --verbose
+
+# Run with custom config
+python scripts/run_pipeline.py --step all --config config/custom_config.yaml
+```
 
 ---
 
-## Main Libraries
+## 📚 Dependencies
 
-- PyTorch  
-- torchvision  
-- timm  
-- PyTorch Lightning  
-- torchmetrics  
-- scikit-learn  
-- mlflow  
-- seaborn  
-- streamlit  
+### Core ML Libraries
+- PyTorch ≥ 2.0
+- PyTorch Lightning ≥ 2.0
+- torchvision
+- timm
+- torchmetrics
+
+### Data Processing
+- scikit-learn
+- pandas
+- numpy
+- matplotlib
+- seaborn
+
+### Experiment Tracking
+- MLflow
+- logging
+
+### Development
+- pytest
+- black
+- flake8
+- mypy
+
+---
+
+*Last updated: August 2025*
