@@ -1,0 +1,23 @@
+# Python and system junk
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.ipynb_checkpoints
+
+# ML training artifacts
+*.ckpt
+*.pt
+*.h5
+*.json
+*.csv
+*.zip
+
+# Output folders (edit as needed)
+eardrum_dataset/
+eardrum_split/
+mlruns/
+lightning_logs/
+checkpoints/
+runs/
+logs/
