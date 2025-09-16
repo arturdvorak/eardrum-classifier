@@ -1,0 +1,2 @@
+total_classes,classes,excluded_classes,split_ratio,base_dir
+4,"['Aom', 'Earwax', 'Normal', 'Chornic']","['Earventulation', 'OtitExterna', 'tympanoskleros', 'Foreign', 'PseduoMembran']","{'train': 0.7, 'val': 0.15, 'test': 0.15}",data/eardrum_split

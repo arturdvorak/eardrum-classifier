@@ -1,36 +1,59 @@
-# Folders to ignore
-checkpoints/
-eardrum_dataset/
-eardrum_split/
-lightning_logs/
-mlruns/
+# Python
 __pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter
 .ipynb_checkpoints/
 
-# File types to ignore
-*.json          # Includes best_checkpoints_*.json, client_secrets.json
-*.txt           # Classification reports
-*.ckpt          # Model checkpoints
-*.pyc           # Python cache files
-*.zip           # Downloaded dataset
-.DS_Store       # macOS system file
-
-# Specific files
-client_secrets.json
-# Datasets
-*.zip
-eardrum_dataset/
-eardrum_split/
-
-# ML logs and models
-mlruns/
-lightning_logs/
+# ML artifacts
 checkpoints/
 *.ckpt
+*.pth
+*.pt
+mlruns/
+lightning_logs/
 
-# Jupyter notebook checkpoints
-.ipynb_checkpoints/
+# Visualizations
+visualizations/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.pdf
 
-# Python cache
-__pycache__/
-*.pyc
+# Temporary files
+.lr_find_*.ckpt
+
+# Data
+data/raw/
+data/eardrum_dataset/
+data/eardrum_split/
+*.zip
+*.csv
+*.json
+
+# System
+.DS_Store
+._*
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# Logs
+*.tmp
+*.temp
+*.log
+*.out
+
+# Keep important files
+!requirements.txt
+!README.md
+!PROJECT_STRUCTURE.md
+!data/processed/
+!data/processed/*.csv
+!data/processed/*.json
