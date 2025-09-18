@@ -70,6 +70,14 @@ Examples:
         help="Show detailed output and debug information"
     )
     
+    # Training epochs control
+    parser.add_argument(
+        "--epochs", "-e",
+        type=int,
+        default=10,
+        help="Number of training epochs (default: 10, use 1 for debugging)"
+    )
+    
     # Parse arguments
     args = parser.parse_args()
     
@@ -118,7 +126,7 @@ Examples:
             print("• Tracking experiments with MLflow...")
             
             # Run training
-            best_checkpoints = train_all_strategies()
+            best_checkpoints = train_all_strategies(epochs=args.epochs)
             
             print(f"Model training completed successfully!")
             print(f"   Trained {len(best_checkpoints)} strategies")

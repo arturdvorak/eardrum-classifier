@@ -53,6 +53,17 @@ def download_and_unpack_kaggle_dataset():
     print("Extracting dataset...")
     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
         zip_ref.extractall(extract_dir)
+    
+    # Move contents from eardrumDs subfolder to main dataset folder
+    eardrum_ds_path = extract_dir / "eardrumDs"
+    if eardrum_ds_path.exists():
+        print("Moving contents from eardrumDs subfolder...")
+        for item in eardrum_ds_path.iterdir():
+            if item.is_dir():
+                shutil.move(str(item), str(extract_dir / item.name))
+        # Remove empty eardrumDs folder
+        eardrum_ds_path.rmdir()
+    
     print(f"Dataset extracted to {extract_dir.resolve()}")
 
 def setup_dataset():

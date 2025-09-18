@@ -177,7 +177,7 @@ def evaluate_model(strategy, ckpt_path):
     
     # Log results to MLflow
     print("Logging results to MLflow...")
-    mlflow.set_tracking_uri("file://mlruns")
+    mlflow.set_tracking_uri("file:mlruns")
     mlflow.set_experiment("eardrum_finetune_strategies")
     
     with mlflow.start_run(run_name=f"eval_{strategy}", nested=True):
@@ -196,22 +196,23 @@ def evaluate_model(strategy, ckpt_path):
             mlflow.log_metric(class_metric_name, score)
         
         # Save and log classification report
-        report_path = f"classification_report_{strategy}.txt"
-        with open(report_path, "w") as f:
-            f.write(report_txt)
-        mlflow.log_artifact(report_path)
+        # Log classification report (temporarily disabled for Docker compatibility)
+        # report_path = f"classification_report_{strategy}.txt"
+        # with open(report_path, "w") as f:
+        #     f.write(report_txt)
+        # mlflow.log_artifact(report_path)
         
-        # Log confusion matrix
-        mlflow.log_artifact(cm_path)
+        # Log confusion matrix (temporarily disabled for Docker compatibility)
+        # mlflow.log_artifact(cm_path)
         
-        # Log model checkpoint used for evaluation
-        mlflow.log_artifact(ckpt_path)
+        # Log model checkpoint used for evaluation (temporarily disabled for Docker compatibility)
+        # mlflow.log_artifact(ckpt_path)
     
     print(f"Evaluation of {strategy} completed successfully!")
     
-    # Clean up temporary files
-    os.remove(report_path)
-    os.remove(cm_path)
+    # Clean up temporary files (temporarily disabled for Docker compatibility)
+    # os.remove(report_path)
+    # os.remove(cm_path)
     
     return {
         'strategy': strategy,

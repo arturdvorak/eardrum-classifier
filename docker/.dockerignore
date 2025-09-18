@@ -1,23 +1,48 @@
-# Python and system junk
+# Python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 *.ipynb_checkpoints
 
-# ML training artifacts
+# Data files (too large for Docker image)
+data/raw/
+data/eardrum_dataset/
+data/eardrum_split/
+*.zip
+
+# Generated files
+checkpoints/
+mlruns/
+lightning_logs/
+visualizations/
 *.ckpt
 *.pt
 *.h5
 *.json
 *.csv
-*.zip
 
-# Output folders (edit as needed)
-eardrum_dataset/
-eardrum_split/
-mlruns/
-lightning_logs/
-checkpoints/
-runs/
-logs/
+# System files
+.DS_Store
+._*
+*~
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!PROJECT_STRUCTURE.md
+
+# Notebooks (optional - remove if you want to include them)
+notebooks/
+*.ipynb
+
+# Web app (if not needed in container)
+web/
+
+# Docker files
+docker/
+Dockerfile*
+docker-compose*

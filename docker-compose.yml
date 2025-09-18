@@ -1,0 +1,107 @@
+services:
+  eardrum-classifier:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: eardrum-classifier
+    shm_size: 2gb
+    volumes:
+      # Mount data directory for persistence
+      - ./data:/app/data
+      # Mount checkpoints for model persistence
+      - ./checkpoints:/app/checkpoints
+      # Mount visualizations for output
+      - ./visualizations:/app/visualizations
+      # Mount MLflow runs for experiment tracking
+      - ./mlruns:/app/mlruns
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MLFLOW_TRACKING_URI=file:/app/mlruns
+      - CUDA_VISIBLE_DEVICES=0
+      # PyTorch optimizations
+      - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+      - TORCH_CUDNN_V8_API_ENABLED=1
+    command: python main.py
+    # Development options
+    stdin_open: true
+    tty: true
+    # Resource limits and GPU support
+    deploy:
+      resources:
+        limits:
+          memory: 12G
+        reservations:
+          memory: 2G
+          # Uncomment for GPU support
+          # devices:
+          #   - driver: nvidia
+          #     count: 1
+          #     capabilities: [gpu]
+
+  # ONNX Runtime Inference Service
+  eardrum-inference:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.inference
+    container_name: eardrum-inference
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount ONNX models directory
+      - ./models:/app/models
+      # Mount logs for debugging
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MODEL_PATH=/app/models/onnx/eardrum_classifier_full.onnx
+      - USE_GPU=false
+      - PORT=8000
+    depends_on:
+      - eardrum-classifier
+    restart: unless-stopped
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 1G
+
+  # Streamlit Web Interface
+  eardrum-web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+    container_name: eardrum-web
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+    depends_on:
+      - eardrum-inference
+    restart: unless-stopped
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+
+  # Optional: MLflow UI service
+  mlflow-ui:
+    image: python:3.9-slim
+    container_name: mlflow-ui
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./mlruns:/mlruns
+    command: >
+      sh -c "pip install mlflow && 
+             mlflow ui --host 0.0.0.0 --port 5000 --backend-store-uri file:///mlruns"
+    depends_on:
+      - eardrum-classifier
