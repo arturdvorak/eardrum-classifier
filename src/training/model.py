@@ -43,6 +43,10 @@ class EfficientNetV2Lightning(pl.LightningModule):
             num_classes=num_classes
         )
         
+        # Enable gradient checkpointing for memory efficiency
+        if hasattr(self.model, 'set_grad_checkpointing'):
+            self.model.set_grad_checkpointing(True)
+        
         # Define loss function
         self.loss_fn = nn.CrossEntropyLoss()
         

@@ -9,7 +9,7 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-def get_dataloaders(data_dir='eardrum_split', image_size=224, batch_size=32, num_workers=4):
+def get_dataloaders(data_dir='data/eardrum_split', image_size=224, batch_size=8, num_workers=0):
     """
     Create DataLoaders for training, validation, and testing.
     
@@ -22,11 +22,14 @@ def get_dataloaders(data_dir='eardrum_split', image_size=224, batch_size=32, num
         data_dir (str): Path to the dataset directory
         image_size (int): Size to resize images to (default: 224)
         batch_size (int): Number of images per batch (default: 32)
-        num_workers (int): Number of worker processes for loading (default: 4)
+        num_workers (int): Number of worker processes for loading (auto-detected if None)
     
     Returns:
         tuple: (train_loader, val_loader, test_loader, train_dataset, val_dataset, test_dataset)
     """
+    
+    # Use single-threaded loading for Docker compatibility
+    # num_workers=0 prevents multiprocessing issues in containers
     
     # Define transformations for training (with data augmentation)
     train_transform = transforms.Compose([
@@ -66,26 +69,29 @@ def get_dataloaders(data_dir='eardrum_split', image_size=224, batch_size=32, num
         transform=val_test_transform
     )
 
-    # Create DataLoaders
+    # Create DataLoaders with Docker-compatible settings
     train_loader = DataLoader(
         train_dataset, 
         batch_size=batch_size, 
         shuffle=True,           # Shuffle training data
-        num_workers=num_workers
+        num_workers=num_workers,  # Multi-threaded for faster loading
+        pin_memory=False        # Disable pin_memory for CPU-only training
     )
     
     val_loader = DataLoader(
         val_dataset, 
         batch_size=batch_size, 
         shuffle=False,          # Don't shuffle validation data
-        num_workers=num_workers
+        num_workers=num_workers,  # Multi-threaded for faster loading
+        pin_memory=False        # Disable pin_memory for CPU-only training
     )
     
     test_loader = DataLoader(
         test_dataset, 
         batch_size=batch_size, 
         shuffle=False,          # Don't shuffle test data
-        num_workers=num_workers
+        num_workers=num_workers,  # Multi-threaded for faster loading
+        pin_memory=False        # Disable pin_memory for CPU-only training
     )
 
     return train_loader, val_loader, test_loader, train_dataset, val_dataset, test_dataset
