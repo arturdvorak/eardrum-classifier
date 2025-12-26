@@ -24,7 +24,6 @@ RUN pip install --upgrade pip && \
 # Copy source code
 COPY src/ ./src/
 COPY main.py .
-COPY PROJECT_STRUCTURE.md .
 
 # Create necessary directories
 RUN mkdir -p data/raw data/processed checkpoints visualizations mlruns
